@@ -1,0 +1,45 @@
+{
+  "name": "@jianhengpan/dsh-chat-mode",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chat mode for DeepSeek Harness: a Chat panel in the sidebar that starts tool-restricted chats on DSH's own sessions, login and models.",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./read-attachment": "./read-attachment.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "read-attachment.js",
+    "lib/*.js",
+    "cordis.patch.yml",
+    "presets/*.yml",
+    "locale/*.json",
+    "icon.svg"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": [
+        "./cordis.patch.yml"
+      ]
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "node --test tests/"
+  }
+}
