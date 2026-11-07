@@ -30,6 +30,21 @@ export async function ensureChatWorkspace(registry, dir) {
 }
 
 /**
+ * Keep the chat workspace at the bottom of DSH's workspace list (DSH offers no
+ * way to hide a workspace). Runs at startup; a workspace added later sits
+ * below it until the next start. A failed move only logs.
+ */
+async function moveToEnd(registry, workspace, ctx) {
+  try {
+    const ids = registry.list().map((w) => w.id)
+    if (ids.length === 0 || ids[ids.length - 1] === workspace.id) return
+    await registry.insertBefore(workspace.id, undefined)
+  } catch (error) {
+    ctx.logger?.warn?.('[chat-mode] could not move the chat workspace to the end', error)
+  }
+}
+
+/**
  * @param {any} ctx cordis context with `workspaceRegistry`
  * @param {{ dshHome?: string }} [options] test seam for the DSH home
  */
@@ -37,7 +52,8 @@ export async function apply(ctx, options = {}) {
   const dir = join(options.dshHome ?? resolveDshHome(), CHAT_DIR_NAME)
   try {
     await mkdir(dir, { recursive: true })
-    await ensureChatWorkspace(ctx.workspaceRegistry, dir)
+    const workspace = await ensureChatWorkspace(ctx.workspaceRegistry, dir)
+    await moveToEnd(ctx.workspaceRegistry, workspace, ctx)
   } catch (error) {
     // Never fail Host startup over the chat workspace; the panel reports it.
     ctx.logger?.warn?.('[chat-mode] chat workspace unavailable', error)

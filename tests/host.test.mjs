@@ -50,3 +50,38 @@ test('apply makes the directory and never throws', async () => {
   assert.ok((await stat(join(home, CHAT_DIR_NAME))).isDirectory())
   assert.equal(warnings.length, 1)
 })
+
+function orderedRegistry(ids, chatId) {
+  const state = { ids: [...ids], moves: [] }
+  const chat = { id: chatId, path: '/d', title: '聊天', async setTitle() {} }
+  return {
+    state,
+    list: () => state.ids.map((id) => (id === chatId ? chat : { id, title: id })),
+    async resolveByPath() { return chat },
+    async create() { throw new Error('unused') },
+    async insertBefore(id, beforeId) {
+      state.moves.push([id, beforeId])
+      state.ids = [...state.ids.filter((x) => x !== id), id]
+      return state.ids
+    },
+  }
+}
+test('apply moves the chat workspace to the end of the list', async () => {
+  const home = await mkdtemp(join(tmpdir(), 'chat-order-'))
+  const reg = orderedRegistry(['chat', 'movie', 'cut'], 'chat')
+  await apply({ workspaceRegistry: reg }, { dshHome: home })
+  assert.deepEqual(reg.state.ids, ['movie', 'cut', 'chat'])
+  assert.deepEqual(reg.state.moves, [['chat', undefined]])
+})
+test('apply does not reorder when the chat workspace is already last', async () => {
+  const home = await mkdtemp(join(tmpdir(), 'chat-order-'))
+  const reg = orderedRegistry(['movie', 'chat'], 'chat')
+  await apply({ workspaceRegistry: reg }, { dshHome: home })
+  assert.deepEqual(reg.state.moves, [])
+})
+test('a failed reorder does not fail startup', async () => {
+  const home = await mkdtemp(join(tmpdir(), 'chat-order-'))
+  const reg = orderedRegistry(['chat', 'movie'], 'chat')
+  reg.insertBefore = async () => { throw new Error('order invalid') }
+  await apply({ workspaceRegistry: reg }, { dshHome: home })
+})
