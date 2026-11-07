@@ -407,3 +407,24 @@ git commit -m "feat: chat panel with new chat, search and recents"
 git add README.md
 git commit -m "docs: README with install, scope and acceptance notes"
 ```
+
+---
+
+### Task 7: 附件管理页（spec §9）
+
+**Files:**
+- Create: `lib/attachment-index.js`（纯函数）、`attachments-host.js`（Host 端，提供列表和删除）
+- Modify: `client.js`（面板加"附件"页）、`index.js`、`locale/*.json`
+- Test: `tests/attachment-index.test.mjs`、`tests/attachments-host.test.mjs`
+
+**Interfaces:**
+- Produces：`export function buildAttachmentIndex(sessions: Array<{ id, workspaceId, title, fileRefs: Array<{ id, name, bytes, hostPath }> }>, chatWorkspaceId: string): Array<{ id, name, bytes, hostPath, chatSessionIds: string[], usedOutsideChat: boolean }>`。它只返回至少被一个聊天引用的附件，按 bytes 从大到小排序。
+- Produces：Host 端 `listChatAttachments(): Promise<ReturnType<typeof buildAttachmentIndex>>` 和 `deleteChatAttachments(ids: string[]): Promise<{ deleted: string[], refused: Array<{ id, reason: 'used-outside-chat' | 'not-found' }> }>`。删除前**重新**建一次索引再判断，不信任客户端传来的状态。
+
+- [ ] **Step 1: 研究 Host 和客户端之间怎么调用**：在 `$ASAR` 里找插件自定义 Remote 方法的公开方式（参考 `dsh-api-session-controller` 的 `typert.host.js` / `typert.remote-client.js`），同时找一个最小的第三方插件写法。再确认会话日志里附件引用的结构，以及怎样不激活 Agent 就列出全部会话的引用（`session.list` 和持久化读取）。把找到的结论写进 ledger。
+- [ ] **Step 2: 先写 `buildAttachmentIndex` 的失败测试**：至少覆盖四种情况：只被一个聊天用的附件；被两个聊天共用（`chatSessionIds.length === 2`）；同时被工作区会话引用（`usedOutsideChat === true`）；只被工作区会话引用的附件不出现在列表里。
+- [ ] **Step 3: 实现，并确认测试通过。**
+- [ ] **Step 4: 写 `deleteChatAttachments` 的失败测试**：用临时 objects 目录。`usedOutsideChat` 的附件被拒绝且文件还在；可删的附件文件被删除；id 不存在时返回 `not-found`；路径不在 objects 根目录下时拒绝（复用 `resolveAllowedAttachment` 的根目录判定）。
+- [ ] **Step 5: 实现，并确认测试通过。**
+- [ ] **Step 6: 客户端"附件"页**：列表、勾选、确认框（文案：`删除 N 个附件？这些聊天里的附件会显示为缺失，无法恢复。`），`usedOutsideChat` 的行置灰并标注 `工作模式也在用`。
+- [ ] **Step 7: 运行 `npm test` 全部通过，然后 Commit。**
