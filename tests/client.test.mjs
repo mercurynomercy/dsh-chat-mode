@@ -49,3 +49,39 @@ test('copy', () => {
   assert.equal(DICT.zh.newChat, '新聊天')
   assert.deepEqual(Object.keys(DICT.zh).sort(), Object.keys(DICT.en).sort())
 })
+
+test('main page is registered with DSH store hooks and actions', () => {
+  const regs = []
+  const stores = { sessions: { list: { getSnapshot() { return this.v }, subscribe() { return () => {} }, v: { byId: {} } } }, workspaces: { list: { getSnapshot() { return {} }, subscribe() { return () => {} } } } }
+  const started = []
+  const ctx = {
+    ...stores,
+    effect: () => {},
+    locale: { register: () => () => {}, bind: () => (k) => k },
+    layout: { selectPanel: () => {} },
+    uiWorkspace: { startSession: (...a) => started.push(a), openSession: () => {} },
+    slots: { inject: (_n, f) => f(), register: (opts, comp) => { regs.push({ opts, comp }); return () => {} } },
+  }
+  mod.apply(ctx)
+  const main = regs.find((r) => r.opts.name === 'main')
+  assert.equal(main.opts.key, 'chat-mode')
+  assert.equal(main.opts.locale, 'chat-mode')
+  const props = main.opts.inject()
+  assert.equal(props.hooks.sessions, stores.sessions.list)
+  assert.equal(props.hooks.workspaces, stores.workspaces.list)
+  props.startChat('w1')
+  assert.deepEqual(started, [['w1', { agentPreset: 'chat' }]])
+  assert.equal(typeof main.comp, 'function')
+  assert.equal(main.comp.name, 'ChatPanelBoundary')
+})
+test('panelModel derives rows and state', () => {
+  const { panelModel } = mod.__test
+  const ws = { items: [{ workspaceId: 'c', path: '/h/.dsh/chat-mode-workspace', sessionIds: ['1'] }], archivedSessionIds: [] }
+  assert.equal(panelModel({ phase: 'pending' }, ws, '').state, 'loading')
+  assert.equal(panelModel({ byId: {} }, { items: [] }, '').state, 'unavailable')
+  assert.equal(panelModel({ byId: {} }, ws, '').state, 'empty')
+  const m = panelModel({ byId: { 1: { title: 'hi', updatedAt: 1 } } }, ws, '')
+  assert.equal(m.state, 'list')
+  assert.equal(m.workspaceId, 'c')
+  assert.equal(panelModel({ byId: { 1: { title: 'hi', updatedAt: 1 } } }, ws, 'zzz').state, 'noMatch')
+})

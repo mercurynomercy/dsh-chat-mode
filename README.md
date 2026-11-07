@@ -1,6 +1,6 @@
 # DSH 聊天模式
 
-给 [DeepSeek Harness（DSH）](https://github.com/deepseek-ai/deepseek-harness) 桌面端加一个**聊天模式**：DSH 侧栏多一个"聊天"入口，点进去就能像 Claude 桌面版的 Chat 那样直接聊天。不用先选项目，也不用再登录一次。
+给 [DeepSeek Harness（DSH）](https://www.deepseek.com/en/harness/) 桌面端加一个**聊天模式**：DSH 侧栏多一个"聊天"入口，点进去就能像 Claude 桌面版的 Chat 那样直接聊天。不用先选项目，也不用再登录一次。
 
 > 非官方第三方插件，与 DeepSeek 官方无关。
 

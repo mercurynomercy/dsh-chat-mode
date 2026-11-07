@@ -77,14 +77,28 @@ window.__ModuleLoader__.load({
       return rows.filter((r) => String(r.title ?? '').toLowerCase().includes(needle))
     }
 
+    // Everything the panel shows, derived from the two DSH list snapshots.
+    function panelModel(sessions, workspaces, query) {
+      if (sessions?.phase === 'pending' || workspaces?.phase === 'pending') return { state: 'loading', rows: [] }
+      const chatWorkspace = findChatWorkspace(workspaces?.items)
+      if (!chatWorkspace) return { state: 'unavailable', rows: [] }
+      const all = chatSessions(sessions, chatWorkspace, workspaces?.archivedSessionIds)
+      const rows = filterByQuery(all, query)
+      const state = rows.length > 0 ? 'list' : all.length > 0 ? 'noMatch' : 'empty'
+      return { state, rows, workspaceId: chatWorkspace.workspaceId }
+    }
+
     // ------------------------------------------------------------------ ui
 
-    let appCtx = null
-
-    const noopStore = { getSnapshot: () => undefined, subscribe: () => () => {} }
-    function useStore(store) {
-      const s = store ?? noopStore
-      return React.useSyncExternalStore(s.subscribe, s.getSnapshot)
+    // DSH hands a slot component one `use<Name>(selector)` prop per store in
+    // `inject().hooks` (see ui-schedule's TaskManagerPage). If a host build ever
+    // passes the raw store instead, read it with its methods still bound.
+    function useListSnapshot(hook, store) {
+      const fallback = React.useSyncExternalStore(
+        (cb) => (typeof hook === 'function' || !store ? () => {} : store.subscribe(cb)),
+        () => (typeof hook === 'function' || !store ? undefined : store.getSnapshot()),
+      )
+      return typeof hook === 'function' ? hook((snapshot) => snapshot) : fallback
     }
 
     function ChatIcon({ size = 16 }) {
@@ -101,37 +115,36 @@ window.__ModuleLoader__.load({
       line: 'var(--dsw-alias-border-l1, rgba(127,127,127,.25))',
       hover: 'var(--dsw-alias-bg-hover, rgba(127,127,127,.1))',
       accent: 'var(--dsw-alias-brand-primary, #4d6bfe)',
+      danger: 'var(--dsw-alias-state-danger, #d93025)',
     }
 
-    function ChatPanel({ t }) {
-      const ctx = appCtx
-      const sessions = useStore(ctx?.sessions?.list)
-      const workspaces = useStore(ctx?.workspaces?.list)
+    function ChatPanel(props) {
+      const t = typeof props.t === 'function' ? props.t : props.tFallback
+      const sessions = useListSnapshot(props.useSessions, props.hooks?.sessions)
+      const workspaces = useListSnapshot(props.useWorkspaces, props.hooks?.workspaces)
       const [query, setQuery] = React.useState('')
       const [error, setError] = React.useState(null)
-
-      const loading = sessions?.phase === 'pending' || workspaces?.phase === 'pending'
-      const chatWorkspace = findChatWorkspace(workspaces?.items)
-      const rows = filterByQuery(chatSessions(sessions, chatWorkspace, workspaces?.archivedSessionIds), query)
+      const model = panelModel(sessions, workspaces, query)
 
       const startChat = () => {
         setError(null)
-        if (!chatWorkspace) return setError(t('unavailable'))
+        if (!model.workspaceId) return setError(t('unavailable'))
         Promise.resolve()
-          .then(() => ctx.uiWorkspace.startSession(chatWorkspace.workspaceId, { agentPreset: CHAT_PRESET }))
+          .then(() => props.startChat(model.workspaceId))
           .catch((reason) => setError(t('startFailed', { reason: String(reason?.message ?? reason) })))
       }
-      const openChat = (id) => ctx.uiWorkspace.openSession(id)
 
+      const note = (text, role) => h('div', { role, style: { color: C.sub, padding: '8px 12px' } }, text)
       let list
-      if (loading) list = h('div', { style: { color: C.sub, padding: '8px 12px' } }, t('loading'))
-      else if (!chatWorkspace) list = h('div', { role: 'alert', style: { color: C.sub, padding: '8px 12px' } }, t('unavailable'))
-      else if (rows.length === 0) list = h('div', { style: { color: C.sub, padding: '8px 12px' } }, query.trim() ? t('noMatch') : t('empty'))
+      if (model.state === 'loading') list = note(t('loading'))
+      else if (model.state === 'unavailable') list = note(t('unavailable'), 'alert')
+      else if (model.state === 'empty') list = note(t('empty'))
+      else if (model.state === 'noMatch') list = note(t('noMatch'))
       else
         list = h(
           'ul',
           { style: { listStyle: 'none', margin: 0, padding: 0 } },
-          rows.map((row) =>
+          model.rows.map((row) =>
             h(
               'li',
               { key: row.id },
@@ -139,7 +152,7 @@ window.__ModuleLoader__.load({
                 'button',
                 {
                   type: 'button',
-                  onClick: () => openChat(row.id),
+                  onClick: () => props.openChat(row.id),
                   style: { width: '100%', textAlign: 'left', padding: '8px 12px', border: 0, borderRadius: 8, background: 'transparent', color: C.text, cursor: 'pointer', font: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
                   onMouseEnter: (e) => (e.currentTarget.style.background = C.hover),
                   onMouseLeave: (e) => (e.currentTarget.style.background = 'transparent'),
@@ -161,10 +174,10 @@ window.__ModuleLoader__.load({
           h('h1', { style: { fontSize: 28, fontWeight: 600, margin: '0 0 8px', textAlign: 'center' } }, t('hero')),
           h(
             'button',
-            { type: 'button', onClick: startChat, disabled: loading, style: { alignSelf: 'center', padding: '10px 22px', borderRadius: 999, border: 0, background: C.accent, color: '#fff', fontSize: 15, cursor: 'pointer', font: 'inherit' } },
+            { type: 'button', onClick: startChat, disabled: model.state === 'loading', style: { alignSelf: 'center', padding: '10px 22px', borderRadius: 999, border: 0, background: C.accent, color: '#fff', fontSize: 15, cursor: 'pointer', font: 'inherit' } },
             '＋ ' + t('newChat'),
           ),
-          error ? h('div', { role: 'alert', style: { color: 'var(--dsw-alias-state-danger, #d93025)', textAlign: 'center' } }, error) : null,
+          error ? h('div', { role: 'alert', style: { color: C.danger, textAlign: 'center' } }, error) : null,
           h('input', {
             type: 'search',
             value: query,
@@ -179,10 +192,33 @@ window.__ModuleLoader__.load({
       )
     }
 
+    // A render error shows its message on the page instead of a blank panel.
+    class ChatPanelBoundary extends (React.Component ?? class {}) {
+      constructor(props) {
+        super(props)
+        this.state = { error: null }
+      }
+      static getDerivedStateFromError(error) {
+        return { error }
+      }
+      componentDidCatch(error) {
+        console.error('[chat-mode] panel render failed', error)
+      }
+      render() {
+        if (this.state.error) {
+          return h(
+            'div',
+            { role: 'alert', style: { padding: 'calc(var(--dsh-frame-top-clearance, 48px) + 24px) 24px', color: C.danger, whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, monospace', fontSize: 12 } },
+            '[chat-mode] ' + String(this.state.error?.stack ?? this.state.error),
+          )
+        }
+        return h(ChatPanel, this.props)
+      }
+    }
+
     // --------------------------------------------------------------- apply
 
     function apply(ctx) {
-      appCtx = ctx
       ctx.effect(() => ctx.locale.register(NS, DICT), 'chat-mode: dictionaries')
       const t = ctx.locale.bind(NS)
       ctx.effect(
@@ -194,12 +230,24 @@ window.__ModuleLoader__.load({
           } catch {
             // layout already gone
           }
-          appCtx = null
         },
         'chat-mode: cleanup',
       )
       ctx.slots.inject('main', () =>
-        ctx.slots.register({ name: 'main', key: PANEL_ID, locale: NS, inject: () => ({ t }) }, ChatPanel),
+        ctx.slots.register(
+          {
+            name: 'main',
+            key: PANEL_ID,
+            locale: NS,
+            inject: () => ({
+              tFallback: t,
+              hooks: { sessions: ctx.sessions.list, workspaces: ctx.workspaces.list },
+              startChat: (workspaceId) => ctx.uiWorkspace.startSession(workspaceId, { agentPreset: CHAT_PRESET }),
+              openChat: (sessionId) => ctx.uiWorkspace.openSession(sessionId),
+            }),
+          },
+          ChatPanelBoundary,
+        ),
       )
       ctx.slots.inject('sidebar.panellist', () =>
         ctx.slots.register({ name: 'sidebar.panellist', id: PANEL_ID, order: 5, locale: NS, label: () => t('panel') }, ChatIcon),
@@ -209,7 +257,7 @@ window.__ModuleLoader__.load({
     return {
       inject: ['slots', 'layout', 'locale', 'uiWorkspace', 'sessions', 'workspaces'],
       apply,
-      __test: { findChatWorkspace, chatSessions, filterByQuery, DICT, PANEL_ID, CHAT_PRESET },
+      __test: { findChatWorkspace, chatSessions, filterByQuery, panelModel, DICT, PANEL_ID, CHAT_PRESET },
     }
   },
 })
