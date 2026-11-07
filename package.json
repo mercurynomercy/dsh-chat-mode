@@ -1,10 +1,31 @@
 {
-  "name": "@jianhengpan/dsh-chat-mode",
+  "name": "@mercurynomercy/dsh-chat-mode",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Chat mode for DeepSeek Harness: a Chat panel in the sidebar that starts tool-restricted chats on DSH's own sessions, login and models.",
+  "description": "DSH 聊天模式：侧栏多一个「聊天」入口，用 DSH 自己的登录和模型聊天，不绑定项目、不再登录；聊天只能联网和读你拖进来的附件。",
+  "author": "mercurynomercy",
   "license": "MIT",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis",
+    "plugin",
+    "chat",
+    "ui"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mercurynomercy/dsh-chat-mode.git"
+  },
+  "homepage": "https://github.com/mercurynomercy/dsh-chat-mode#readme",
+  "bugs": {
+    "url": "https://github.com/mercurynomercy/dsh-chat-mode/issues"
+  },
+  "engines": {
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
+  },
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -18,7 +39,11 @@
     "lib/*.js",
     "cordis.patch.yml",
     "presets/*.yml",
-    "icon.svg"
+    "icon.svg",
+    "screenshots.json",
+    "assets/why-panel.png",
+    "LICENSE",
+    "README.md"
   ],
   "dsh": {
     "bundle": {
@@ -36,6 +61,11 @@
         "@deepseek-ai/dsh-client-ui-workspace",
         "@deepseek-ai/dsh-client-locale"
       ]
+    },
+    "compatibility": {
+      "dshReleases": {
+        "0.2.2-rc.1+": "compatible"
+      }
     }
   },
   "scripts": {

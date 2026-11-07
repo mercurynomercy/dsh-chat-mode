@@ -1,4 +1,4 @@
 - insert:
     - id: chat-mode-host
-      name: '@jianhengpan/dsh-chat-mode'
+      name: '@mercurynomercy/dsh-chat-mode'
       config: {}

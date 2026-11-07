@@ -22,7 +22,7 @@ test('chat preset has no forbidden plugins', () => {
 })
 test('chat preset has web and read_attachment', () => {
   assert.ok(names.includes('@deepseek-ai/dsh-tool-web'))
-  assert.ok(names.includes('@jianhengpan/dsh-chat-mode/read-attachment'))
+  assert.ok(names.includes('@mercurynomercy/dsh-chat-mode/read-attachment'))
 })
 test('bundle patch list includes the preset', async () => {
   const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))

@@ -9,7 +9,7 @@
 // Only public slots and services are used: no pixel offsets, no DOM or CSS
 // tricks on DSH's own elements.
 window.__ModuleLoader__.load({
-  id: '@jianhengpan/dsh-chat-mode',
+  id: '@mercurynomercy/dsh-chat-mode',
   factory(require) {
     const React = require('react')
     const h = React.createElement

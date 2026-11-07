@@ -21,7 +21,7 @@
               fetch: true
               searchTimeoutMs: 60000
           - id: chat-read-attachment
-            name: '@jianhengpan/dsh-chat-mode/read-attachment'
+            name: '@mercurynomercy/dsh-chat-mode/read-attachment'
           - id: compaction
             name: cordis:group
             group: true

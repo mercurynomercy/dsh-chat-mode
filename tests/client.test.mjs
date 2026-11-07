@@ -5,7 +5,7 @@ import { loadClient } from './fixtures/load-client.mjs'
 const { id, mod, findChatWorkspace, chatSessions, filterByQuery, DICT, PANEL_ID, CHAT_PRESET } = await loadClient()
 
 test('module identity', () => {
-  assert.equal(id, '@jianhengpan/dsh-chat-mode')
+  assert.equal(id, '@mercurynomercy/dsh-chat-mode')
   assert.equal(PANEL_ID, 'chat-mode')
   assert.equal(CHAT_PRESET, 'chat')
   assert.ok(mod.inject.includes('slots') && mod.inject.includes('uiWorkspace') && mod.inject.includes('sessions') && mod.inject.includes('workspaces'))

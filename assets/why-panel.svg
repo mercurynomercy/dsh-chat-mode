@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" font-family="-apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif" font-size="13">
+  <rect width="960" height="420" fill="#ffffff"/>
+  <!-- left: overlay toggle -->
+  <text x="40" y="36" font-size="16" font-weight="600" fill="#1f1f1f">✗ 左上角覆盖层切换（旧做法）</text>
+  <g transform="translate(40,52)">
+    <rect width="420" height="300" rx="10" fill="#f6f6f7" stroke="#d8d8dc"/>
+    <circle cx="16" cy="16" r="5" fill="#ff5f57"/><circle cx="32" cy="16" r="5" fill="#febc2e"/><circle cx="48" cy="16" r="5" fill="#28c840"/>
+    <rect x="150" y="6" width="110" height="22" rx="6" fill="#fff" stroke="#e5484d" stroke-dasharray="4 3"/>
+    <text x="164" y="21" fill="#1f1f1f">聊天 | 工作</text>
+    <line x1="64" y1="17" x2="150" y2="17" stroke="#e5484d" stroke-dasharray="2 3"/>
+    <text x="70" y="44" fill="#e5484d" font-size="11">left: 154px 写死</text>
+    <rect x="0" y="56" width="420" height="244" fill="#fff4f4" stroke="#f3b5b7"/>
+    <text x="20" y="90" fill="#1f1f1f">覆盖整个窗口的网页层</text>
+    <text x="20" y="114" fill="#555">嵌 chat.deepseek.com → 要再登录一次</text>
+    <text x="20" y="138" fill="#555">用 CSS 隐藏 DSH 自己的按钮</text>
+    <text x="20" y="162" fill="#555">位置按某台 Windows 机器量出来</text>
+    <text x="20" y="196" fill="#e5484d">DSH 一改版、换 Mac、换缩放 → 错位或失效</text>
+  </g>
+  <!-- right: sidebar panel -->
+  <text x="500" y="36" font-size="16" font-weight="600" fill="#1f1f1f">✓ 侧栏插件入口（本插件）</text>
+  <g transform="translate(500,52)">
+    <rect width="420" height="300" rx="10" fill="#fff" stroke="#d8d8dc"/>
+    <rect width="130" height="300" rx="10" fill="#efeff1"/>
+    <circle cx="16" cy="16" r="5" fill="#ff5f57"/><circle cx="32" cy="16" r="5" fill="#febc2e"/><circle cx="48" cy="16" r="5" fill="#28c840"/>
+    <rect x="10" y="40" width="110" height="24" rx="6" fill="#fff" stroke="#ddd"/><text x="38" y="56" fill="#1f1f1f">⊕ 新会话</text>
+    <rect x="10" y="72" width="110" height="24" rx="6" fill="#dfe6ff" stroke="#4d6bfe"/><text x="20" y="88" fill="#1f1f1f">💬 聊天</text>
+    <text x="20" y="116" fill="#555">🧩 插件</text>
+    <text x="20" y="140" fill="#555">🕘 自动化任务</text>
+    <text x="14" y="172" fill="#999" font-size="11">工作区</text>
+    <text x="20" y="194" fill="#555">📁 Movie</text>
+    <text x="20" y="216" fill="#555">📁 聊天</text>
+    <text x="196" y="90" font-size="17" font-weight="600" fill="#1f1f1f">今天想聊点什么？</text>
+    <rect x="222" y="106" width="120" height="30" rx="15" fill="#4d6bfe"/><text x="248" y="126" fill="#fff">＋ 新聊天</text>
+    <rect x="160" y="152" width="240" height="26" rx="6" fill="#fff" stroke="#ddd"/><text x="170" y="169" fill="#aaa">搜索聊天</text>
+    <text x="164" y="200" fill="#999" font-size="11">最近</text>
+    <text x="170" y="222" fill="#555">帮我想个周末去哪</text>
+    <text x="170" y="244" fill="#555">解释一下 MoE 架构</text>
+    <line x1="130" y1="84" x2="160" y2="84" stroke="#4d6bfe"/>
+  </g>
+  <text x="500" y="378" fill="#2f7d32">只用 DSH 公开插件位：不写死像素、不动 DSH 的界面</text>
+  <text x="500" y="400" fill="#2f7d32">复用 DSH 自己的登录和模型，不用再登录</text>
+  <text x="40" y="378" fill="#e5484d">依赖 DSH 内部按钮文案、CSS 变量和标题栏结构</text>
+</svg>

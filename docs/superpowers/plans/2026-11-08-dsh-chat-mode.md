@@ -20,7 +20,7 @@
 - 不弹任何额外登录，不存任何凭据。
 - `chat` preset **不准**包含：`dsh-tool-fs`、`dsh-tool-fs-search`、`dsh-tool-bash*`、`dsh-tool-pwsh*`、`dsh-terminal*`、`dsh-tool-str-replace-editor`、`dsh-tool-subagent*`、`dsh-workflow*`、`dsh-tool-workflow`、`dsh-tool-jobs`、`dsh-tool-todo`、`dsh-tool-schedule`、`dsh-skill-filesystem`、`dsh-tool-skill`、`dsh-agent-instructions`（它会读工作区的 AGENTS.md）、`dsh-plan-mode`、`dsh-tool-goal`、`dsh-command-goal`。
 - 唯一允许的文件读取：本插件的 `read_attachment`。路径必须真实位于 `dshHomePath('attachments','v1','objects')` 下，**并且**属于当前会话用户消息里出现过的附件。由 Host 端强制执行。
-- 包名 `@jianhengpan/dsh-chat-mode`，客户端模块 id 与包名相同；面板 id `chat-mode`；preset id `chat`；聊天目录 `dshHomePath('chat-mode-workspace')`，工作区标题 `聊天`。
+- 包名 `@mercurynomercy/dsh-chat-mode`，客户端模块 id 与包名相同；面板 id `chat-mode`；preset id `chat`；聊天目录 `dshHomePath('chat-mode-workspace')`，工作区标题 `聊天`。
 - 用户机器上已装了 `@starplume/dsh-chat-mode`，必须先卸载，否则两个插件会抢同一套位置。
 - 卸载本插件时不删除任何会话或目录。
 
@@ -61,7 +61,7 @@ README.md
 
 **Interfaces:**
 - Produces：`package.json` 的 `exports` 有 `"."`→`./index.js`、`"./client"`→`./client.js`、`"./read-attachment"`→`./read-attachment.js`、`"./locale/*.json"`、`"./icon"`。`dsh.bundle.patch` 是数组 `["./cordis.patch.yml", "./presets/chat.patch.yml"]`（presets 文件在 Task 4 创建，本 Task 先只放 `./cordis.patch.yml`）。`dsh.client` 为 `{ platform: "web", immediately: true, inject: ["@deepseek-ai/dsh-client-ui-layout", "@deepseek-ai/dsh-client-ui-sidebar", "@deepseek-ai/dsh-client-ui-workspace", "@deepseek-ai/dsh-client-locale"] }`。
-- `cordis.patch.yml` 插入 `{ id: chat-mode-host, name: '@jianhengpan/dsh-chat-mode', config: {} }`。
+- `cordis.patch.yml` 插入 `{ id: chat-mode-host, name: '@mercurynomercy/dsh-chat-mode', config: {} }`。
 
 - [ ] **Step 1: 卸载 Starp1ume 插件**
 
@@ -72,7 +72,7 @@ README.md
 
 `package.json` 参照 `$REF=/private/tmp/claude-501/-Users-jianhengpan-Github-dsh-chat-mode/c1c002fe-829d-4d8e-bcce-7fbd20576aac/scratchpad/ref/dsh-chat-mode/package.json`，加上 `"scripts": { "test": "node --test tests/" }`。
 `index.js` 导出 `name = 'chat-mode-host'`、`inject = []`、`apply(ctx) {}`。
-`client.js` 用 `window.__ModuleLoader__.load({ id: '@jianhengpan/dsh-chat-mode', factory(require) { ...; return { inject: ['slots'], apply } } })`。此时 `apply` 只做一件事：`console.info('[chat-mode] loaded')`。
+`client.js` 用 `window.__ModuleLoader__.load({ id: '@mercurynomercy/dsh-chat-mode', factory(require) { ...; return { inject: ['slots'], apply } } })`。此时 `apply` 只做一件事：`console.info('[chat-mode] loaded')`。
 
 - [ ] **Step 3: 安装并验证加载**
 
@@ -232,7 +232,7 @@ git commit -m "feat: read_attachment tool scoped to this chat's attachments"
 - Test: `tests/preset.test.mjs`, `tests/host.test.mjs`
 
 **Interfaces:**
-- Consumes：Task 3 的插件，在 preset 里以 `name: '@jianhengpan/dsh-chat-mode/read-attachment'` 引用（DSH 支持子路径插件名，例如 `@deepseek-ai/dsh-tool-cordis/host`）。
+- Consumes：Task 3 的插件，在 preset 里以 `name: '@mercurynomercy/dsh-chat-mode/read-attachment'` 引用（DSH 支持子路径插件名，例如 `@deepseek-ai/dsh-tool-cordis/host`）。
 - Produces：`index.js` 导出 `export async function ensureChatWorkspace(registry: { resolveByPath(p): Promise<W|undefined>, create(p): Promise<{workspace: W}|W>, rename?(...) }, dir: string): Promise<W>`，`export const CHAT_DIR_NAME = 'chat-mode-workspace'`，`export const CHAT_WORKSPACE_TITLE = '聊天'`。`apply(ctx)` 的 `inject = ['workspaceRegistry']`，启动时调用 `ensureChatWorkspace(ctx.workspaceRegistry, dshHomePath(CHAT_DIR_NAME))`。
 
 - [ ] **Step 1: 写 preset 的失败测试**
@@ -251,7 +251,7 @@ test('chat preset has no forbidden plugins', () => {
 })
 test('chat preset has web and read_attachment', () => {
   assert.ok(names.includes('@deepseek-ai/dsh-tool-web'))
-  assert.ok(names.includes('@jianhengpan/dsh-chat-mode/read-attachment'))
+  assert.ok(names.includes('@mercurynomercy/dsh-chat-mode/read-attachment'))
 })
 ```
 
@@ -265,7 +265,7 @@ test('chat preset has web and read_attachment', () => {
 1. `persona`：`prefix: You are DeepSeek, a helpful assistant chatting with the user. You cannot access the user's computer except files they attach to this chat.`，`includeRuntimeContext: false`；
 2. `time-context`；
 3. `tool-web`：`config: { fetch: true, searchTimeoutMs: 60000 }`；
-4. `chat-read-attachment`：`name: '@jianhengpan/dsh-chat-mode/read-attachment'`；
+4. `chat-read-attachment`：`name: '@mercurynomercy/dsh-chat-mode/read-attachment'`；
 5. `compaction` 组，照抄 minimal 的写法。
 
 先在 standard preset 里核对 tool-web 旁边有没有依赖的 present/web-search 行。如果有，一并带上，并在 commit message 里写明。
