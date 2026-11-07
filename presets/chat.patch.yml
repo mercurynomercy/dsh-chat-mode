@@ -10,7 +10,7 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              prefix: You are DeepSeek, a helpful assistant chatting with the user. You cannot access the user's computer except files they attach to this chat, which you can read with read_attachment.
+              prefix: You are DeepSeek, a helpful assistant chatting with the user. You cannot access the user's computer except files they attach to this chat, which you can read with read_attachment. Reply in the language the user writes in.
               complete: true
               includeRuntimeContext: false
           - id: time-context

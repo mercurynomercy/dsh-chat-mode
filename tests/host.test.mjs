@@ -85,3 +85,19 @@ test('a failed reorder does not fail startup', async () => {
   reg.insertBefore = async () => { throw new Error('order invalid') }
   await apply({ workspaceRegistry: reg }, { dshHome: home })
 })
+
+test('chat workspace title follows the system language', async () => {
+  const { workspaceTitle } = await import('../index.js')
+  assert.equal(workspaceTitle('zh-CN'), '聊天')
+  assert.equal(workspaceTitle('zh_TW.UTF-8'), '聊天')
+  assert.equal(workspaceTitle('ja-JP'), 'チャット')
+  assert.equal(workspaceTitle('ru_RU.UTF-8'), 'Чат')
+  assert.equal(workspaceTitle('en-AU'), 'Chat')
+  assert.equal(workspaceTitle('de-DE'), 'Chat')
+  assert.equal(workspaceTitle(undefined), 'Chat')
+})
+test('ensureChatWorkspace uses the given title', async () => {
+  const reg = fakeRegistry()
+  const ws = await ensureChatWorkspace(reg, '/d/chat-mode-workspace', 'Chat')
+  assert.equal(ws.title, 'Chat')
+})

@@ -13,7 +13,9 @@
     "cordis",
     "plugin",
     "chat",
-    "ui"
+    "ui",
+    "i18n",
+    "multilingual"
   ],
   "repository": {
     "type": "git",
@@ -43,7 +45,8 @@
     "screenshots.json",
     "assets/why-panel.png",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "README.en.md"
   ],
   "dsh": {
     "bundle": {

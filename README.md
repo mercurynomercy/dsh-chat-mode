@@ -1,5 +1,7 @@
 # DSH 聊天模式
 
+中文 | [English](README.en.md)
+
 给 [DeepSeek Harness（DSH）](https://www.deepseek.com/en/harness/) 桌面端加一个**聊天模式**：DSH 侧栏多一个"聊天"入口，点进去就能像 Claude 桌面版的 Chat 那样直接聊天。不用先选项目，也不用再登录一次。
 
 > 非官方第三方插件，与 DeepSeek 官方无关。
@@ -16,7 +18,8 @@
   - 用 `read_attachment` 读你**拖进这个聊天**的文件。
 
   模型没有任何读写本机文件、执行命令、开子代理的工具。`read_attachment` 由 DSH 那一端强制检查：它只能读本聊天的附件，读其他聊天的附件、`~/Desktop`、`~/.zshrc` 这类路径都会被拒绝。
-- **不碰你的项目**：聊天都放在一个专用目录 `~/.dsh/chat-mode-workspace/` 里，在工作区列表里显示为"聊天"分组，不会混进 Movie、CutFinder 这些项目。
+- **不碰你的项目**：聊天都放在一个专用目录 `~/.dsh/chat-mode-workspace/` 里，在工作区列表里显示为一个"聊天"分组，固定排在最后，不会混进 Movie、CutFinder 这些项目。
+- **多语言**：界面跟随 DSH 的界面语言，支持中文、English、日本語、Español、Français、Deutsch、Русский、Português 八种。"聊天"工作区第一次创建时按系统语言命名（聊天 / Chat / チャット / Чат）。模型会用你提问的语言回复。
 - **工作模式不变**：DSH 原来的界面和行为一点不动。
 
 ## 为什么是侧栏插件入口，而不是左上角切换按钮
@@ -68,7 +71,8 @@ dsh plugin --profile desktop remove @mercurynomercy/dsh-chat-mode
 ## 已知限制
 
 - 只在 macOS + DSH 0.2.2-rc.1 上验证过。
-- 聊天会作为一个"聊天"分组显示在工作区列表里：DSH 没有公开的办法把一个工作区藏起来。
+- 聊天会作为一个"聊天"分组显示在工作区列表里（插件每次启动时把它移到最后）：DSH 没有公开的办法把一个工作区藏起来。
+- 从侧栏的"聊天"工作区直接新建会话，会用 DSH 的默认模式，而不是 `chat` 模式。请从"聊天"面板的**新聊天**按钮开始聊天。
 - 联网搜索需要你在 DSH 里登录了 DeepSeek 账号，或者配置了 DeepSeek API key。
 - 模型本身不支持图片或工具调用时，按 DSH 的提示处理。
 

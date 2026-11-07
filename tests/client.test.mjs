@@ -85,3 +85,15 @@ test('panelModel derives rows and state', () => {
   assert.equal(m.workspaceId, 'c')
   assert.equal(panelModel({ byId: { 1: { title: 'hi', updatedAt: 1 } } }, ws, 'zzz').state, 'noMatch')
 })
+
+test('every DSH UI language has the full dictionary', () => {
+  // The languages DSH's own sidebar registers.
+  const dshLocales = ['zh', 'en', 'ja', 'es', 'fr', 'de', 'ru', 'pt']
+  const keys = Object.keys(DICT.zh).sort()
+  for (const lang of dshLocales) {
+    assert.ok(DICT[lang], `missing ${lang}`)
+    assert.deepEqual(Object.keys(DICT[lang]).sort(), keys, `${lang} keys`)
+    for (const k of keys) assert.ok(DICT[lang][k].trim(), `${lang}.${k} empty`)
+    assert.match(DICT[lang].startFailed, /\{reason\}/, `${lang}.startFailed keeps {reason}`)
+  }
+})

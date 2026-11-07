@@ -1,5 +1,6 @@
 // Host half of the chat mode plugin: on startup, make sure the chat directory
-// exists and is registered as the "聊天" workspace that chat sessions live in.
+// exists and is registered as the chat workspace ("聊天" / "Chat" / …) that
+// chat sessions live in.
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { resolveDshHome } from './read-attachment.js'
@@ -10,19 +11,37 @@ export const CHAT_DIR_NAME = 'chat-mode-workspace'
 export const CHAT_WORKSPACE_TITLE = '聊天'
 
 /**
- * Resolve or create the chat workspace. A newly created one is titled 聊天
- * unless another workspace already holds that title; an existing one keeps
- * whatever title the user gave it.
+ * Title for a newly created chat workspace in the system language. The Host
+ * cannot see the UI language, so it goes by the OS locale.
+ * @param {string | undefined} locale e.g. "zh-CN", "ja_JP.UTF-8"
+ */
+export function workspaceTitle(locale) {
+  const lang = String(locale ?? '').toLowerCase().slice(0, 2)
+  if (lang === 'zh') return '聊天'
+  if (lang === 'ja') return 'チャット'
+  if (lang === 'ru') return 'Чат'
+  return 'Chat'
+}
+
+function systemLocale(env = process.env) {
+  return env.LC_ALL || env.LC_MESSAGES || env.LANG || Intl.DateTimeFormat().resolvedOptions().locale
+}
+
+/**
+ * Resolve or create the chat workspace. A newly created one gets `title`
+ * unless another workspace already holds it; an existing one keeps whatever
+ * title it has.
  * @param {{ resolveByPath(p: string): Promise<any>, create(p: string): Promise<any>, list(): any[] }} registry
  * @param {string} dir
+ * @param {string} [title]
  */
-export async function ensureChatWorkspace(registry, dir) {
+export async function ensureChatWorkspace(registry, dir, title = CHAT_WORKSPACE_TITLE) {
   try {
     const existing = await registry.resolveByPath(dir)
     if (existing !== undefined) return existing
     const workspace = await registry.create(dir)
-    const taken = registry.list().some((w) => w.id !== workspace.id && w.title === CHAT_WORKSPACE_TITLE)
-    if (!taken && workspace.title !== CHAT_WORKSPACE_TITLE) await workspace.setTitle(CHAT_WORKSPACE_TITLE)
+    const taken = registry.list().some((w) => w.id !== workspace.id && w.title === title)
+    if (!taken && workspace.title !== title) await workspace.setTitle(title)
     return workspace
   } catch (error) {
     throw new Error(`chat workspace unavailable: ${error?.message ?? error}`, { cause: error })
@@ -52,7 +71,7 @@ export async function apply(ctx, options = {}) {
   const dir = join(options.dshHome ?? resolveDshHome(), CHAT_DIR_NAME)
   try {
     await mkdir(dir, { recursive: true })
-    const workspace = await ensureChatWorkspace(ctx.workspaceRegistry, dir)
+    const workspace = await ensureChatWorkspace(ctx.workspaceRegistry, dir, workspaceTitle(systemLocale()))
     await moveToEnd(ctx.workspaceRegistry, workspace, ctx)
   } catch (error) {
     // Never fail Host startup over the chat workspace; the panel reports it.
