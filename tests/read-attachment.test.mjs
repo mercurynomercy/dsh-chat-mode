@@ -17,10 +17,19 @@ before(async () => {
   await mkdir(join(objects, 'bb'), { recursive: true })
   await writeFile(join(objects, 'aa', 'aa1'), 'hello\nworld')
   await writeFile(join(objects, 'bb', 'bb2'), 'other')
+  // Real DSH layout for non-image files: v1/files/<xx>/<sha>/<display name> (a hard link).
+  await mkdir(join(home, 'attachments', 'v1', 'files', 'cc'), { recursive: true })
+  await mkdir(join(home, 'attachments', 'v1', 'files', 'cc', 'cc3'))
+  await writeFile(join(home, 'attachments', 'v1', 'files', 'cc', 'cc3', 'report.txt'), 'real layout')
   const registered = []
   const ctx = {
     tools: { register: (t) => registered.push(t) },
-    attachments: { fileHostPath: (ref) => join(objects, ref.attachmentId.slice(0, 2), ref.attachmentId) },
+    attachments: {
+      fileHostPath: (ref) =>
+        ref.attachmentId === 'cc3'
+          ? join(home, 'attachments', 'v1', 'files', 'cc', 'cc3', ref.name)
+          : join(objects, ref.attachmentId.slice(0, 2), ref.attachmentId),
+    },
   }
   apply(ctx, { dshHome: home })
   tool = registered[0]
@@ -44,6 +53,11 @@ test('reads an attachment of this chat', async () => {
   const value = await tool.execute({ file_path: join(objects, 'aa', 'aa1') }, sessionWith(mine))
   const [block] = tool.output.render({}, value)
   assert.match(block.text, /^<path>.*aa1<\/path>\n<type>file<\/type>\n<content>\n1: hello\n2: world\n/)
+})
+test('reads a file attachment stored under v1/files', async () => {
+  const ref = { attachmentId: 'cc3', name: 'report.txt', bytes: 11 }
+  const value = await tool.execute({ file_path: join(home, 'attachments', 'v1', 'files', 'cc', 'cc3', 'report.txt') }, sessionWith(ref))
+  assert.match(tool.output.render({}, value)[0].text, /1: real layout/)
 })
 test('refuses an attachment of another chat', async () => {
   await assert.rejects(tool.execute({ file_path: join(objects, 'bb', 'bb2') }, sessionWith(mine)), { message: DENY_MESSAGE })

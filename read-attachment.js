@@ -61,7 +61,8 @@ async function realPaths(paths) {
  * @param {{ dshHome?: string }} [options] test seam for the DSH home
  */
 export function apply(ctx, options = {}) {
-  const objectsRoot = join(options.dshHome ?? resolveDshHome(), 'attachments', 'v1', 'objects')
+  // DSH's attachment root: images live in objects/, other files in files/ (hard links into file-objects/).
+  const attachmentsRoot = join(options.dshHome ?? resolveDshHome(), 'attachments', 'v1')
   const hostPathOf = (ref) => {
     try {
       return ctx.attachments.fileHostPath(ref)
@@ -102,7 +103,7 @@ export function apply(ctx, options = {}) {
       const session = exec?.agent?.session
       if (!session) throw new Error('read_attachment requires an owning chat session')
       const allowedRealPaths = await realPaths(collectSessionAttachmentPaths(session.deriveMessages(), hostPathOf))
-      const verdict = await resolveAllowedAttachment(args.file_path, { objectsRoot, allowedRealPaths })
+      const verdict = await resolveAllowedAttachment(args.file_path, { objectsRoot: attachmentsRoot, allowedRealPaths })
       if (!verdict.ok) throw new Error(DENY_MESSAGE)
       const text = await readFile(verdict.realPath, 'utf8')
       return { text: renderWindow(text, verdict.realPath, args.offset ?? 1, args.limit ?? READ_LIMIT) }
