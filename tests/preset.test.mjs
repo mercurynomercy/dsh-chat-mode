@@ -28,3 +28,9 @@ test('bundle patch list includes the preset', async () => {
   const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
   assert.deepEqual(pkg.dsh.bundle.patch, ['./cordis.patch.yml', './presets/chat.patch.yml'])
 })
+
+test('chat preset has a readable name and description', () => {
+  assert.equal(row.config.name, '聊天模式 Chat')
+  assert.match(row.config.description, /联网搜索/)
+  assert.match(row.config.description, /web search/i)
+})

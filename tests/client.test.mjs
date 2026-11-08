@@ -97,3 +97,24 @@ test('every DSH UI language has the full dictionary', () => {
     assert.match(DICT[lang].startFailed, /\{reason\}/, `${lang}.startFailed keeps {reason}`)
   }
 })
+
+test('archiveChat archives through uiWorkspace', async () => {
+  const regs = []
+  const archived = []
+  const ctx = {
+    sessions: { list: {} }, workspaces: { list: {} },
+    effect: () => {},
+    locale: { register: () => () => {}, bind: () => (k) => k },
+    layout: { selectPanel: () => {} },
+    uiWorkspace: { startSession: () => {}, openSession: () => {}, archiveSession: async (id) => archived.push(id) },
+    slots: { inject: (_n, f) => f(), register: (opts) => { regs.push(opts); return () => {} } },
+  }
+  mod.apply(ctx)
+  await regs.find((o) => o.name === 'main').inject().archiveChat('s1')
+  assert.deepEqual(archived, ['s1'])
+})
+test('archive copy exists', () => {
+  assert.equal(DICT.zh.archive, '归档')
+  assert.equal(DICT.en.archive, 'Archive')
+  assert.match(DICT.zh.archiveFailed, /\{reason\}/)
+})

@@ -5,6 +5,8 @@
       name: '@deepseek-ai/dsh-agent-preset'
       config:
         id: chat
+        name: 聊天模式 Chat
+        description: 只用来聊天：联网搜索、看图片、读你拖进来的附件；不能读写本机文件或执行命令。Chat only — web search, images and your attachments; no file or shell tools.
         order: 5
         plugins:
           - id: persona

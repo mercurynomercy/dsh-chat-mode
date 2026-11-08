@@ -10,7 +10,7 @@ Adds a **Chat mode** to the [DeepSeek Harness (DSH)](https://www.deepseek.com/en
 
 ## What it does
 
-- **A Chat entry in the sidebar.** The panel has a greeting, a **New chat** button, search, and your recent chats.
+- **A Chat entry in the sidebar.** The panel has a greeting, a **New chat** button, search, and your recent chats. Each chat can be **archived**. DSH cannot delete sessions, so archiving is the closest option: the chat leaves the list, and you can restore it from the workspace sidebar under View options → Archived only.
 - **Runs on DSH's own sessions, sign-in and models.** Each chat is an ordinary DSH session. It uses the account you are already signed in with and your default model, and you can switch models in the composer. No embedded web page, no stored tokens.
 - **Chats can only do chat things.** Every chat runs on the plugin's `chat` agent preset. The model has three capabilities:
   - search the web and open pages (DSH's `web_search` / `web_fetch`);

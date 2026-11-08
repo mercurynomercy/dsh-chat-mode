@@ -32,6 +32,8 @@ window.__ModuleLoader__.load({
         loading: '加载中…',
         unavailable: '聊天工作区不可用，请完全退出并重启 DSH',
         startFailed: '无法新建聊天：{reason}',
+        archive: '归档',
+        archiveFailed: '无法归档：{reason}',
       },
       en: {
         panel: 'Chat',
@@ -45,6 +47,8 @@ window.__ModuleLoader__.load({
         loading: 'Loading…',
         unavailable: 'Chat workspace unavailable. Quit and restart DSH.',
         startFailed: 'Could not start a chat: {reason}',
+        archive: 'Archive',
+        archiveFailed: 'Could not archive: {reason}',
       },
       ja: {
         panel: 'チャット',
@@ -58,6 +62,8 @@ window.__ModuleLoader__.load({
         loading: '読み込み中…',
         unavailable: 'チャットのワークスペースを利用できません。DSH を完全に終了して再起動してください。',
         startFailed: 'チャットを開始できませんでした：{reason}',
+        archive: 'アーカイブ',
+        archiveFailed: 'アーカイブできませんでした：{reason}',
       },
       es: {
         panel: 'Chat',
@@ -71,6 +77,8 @@ window.__ModuleLoader__.load({
         loading: 'Cargando…',
         unavailable: 'El espacio de trabajo de chat no está disponible. Cierra DSH por completo y vuelve a abrirlo.',
         startFailed: 'No se pudo iniciar el chat: {reason}',
+        archive: 'Archivar',
+        archiveFailed: 'No se pudo archivar: {reason}',
       },
       fr: {
         panel: 'Chat',
@@ -84,6 +92,8 @@ window.__ModuleLoader__.load({
         loading: 'Chargement…',
         unavailable: "L'espace de travail du chat est indisponible. Quittez complètement DSH puis relancez-le.",
         startFailed: 'Impossible de démarrer le chat : {reason}',
+        archive: 'Archiver',
+        archiveFailed: "Impossible d'archiver : {reason}",
       },
       de: {
         panel: 'Chat',
@@ -97,6 +107,8 @@ window.__ModuleLoader__.load({
         loading: 'Wird geladen…',
         unavailable: 'Chat-Arbeitsbereich nicht verfügbar. Beende DSH vollständig und starte es neu.',
         startFailed: 'Chat konnte nicht gestartet werden: {reason}',
+        archive: 'Archivieren',
+        archiveFailed: 'Archivieren fehlgeschlagen: {reason}',
       },
       ru: {
         panel: 'Чат',
@@ -110,6 +122,8 @@ window.__ModuleLoader__.load({
         loading: 'Загрузка…',
         unavailable: 'Рабочая область чата недоступна. Полностью закройте DSH и запустите снова.',
         startFailed: 'Не удалось начать чат: {reason}',
+        archive: 'В архив',
+        archiveFailed: 'Не удалось архивировать: {reason}',
       },
       pt: {
         panel: 'Chat',
@@ -123,6 +137,8 @@ window.__ModuleLoader__.load({
         loading: 'Carregando…',
         unavailable: 'O espaço de trabalho do chat não está disponível. Feche o DSH completamente e abra-o novamente.',
         startFailed: 'Não foi possível iniciar o chat: {reason}',
+        archive: 'Arquivar',
+        archiveFailed: 'Não foi possível arquivar: {reason}',
       },
     }
 
@@ -212,6 +228,13 @@ window.__ModuleLoader__.load({
           .catch((reason) => setError(t('startFailed', { reason: String(reason?.message ?? reason) })))
       }
 
+      const archiveChat = (sessionId) => {
+        setError(null)
+        Promise.resolve()
+          .then(() => props.archiveChat(sessionId))
+          .catch((reason) => setError(t('archiveFailed', { reason: String(reason?.message ?? reason) })))
+      }
+
       const note = (text, role) => h('div', { role, style: { color: C.sub, padding: '8px 12px' } }, text)
       let list
       if (model.state === 'loading') list = note(t('loading'))
@@ -225,17 +248,31 @@ window.__ModuleLoader__.load({
           model.rows.map((row) =>
             h(
               'li',
-              { key: row.id },
+              {
+                key: row.id,
+                style: { display: 'flex', alignItems: 'center', borderRadius: 8 },
+                onMouseEnter: (e) => (e.currentTarget.style.background = C.hover),
+                onMouseLeave: (e) => (e.currentTarget.style.background = 'transparent'),
+              },
               h(
                 'button',
                 {
                   type: 'button',
                   onClick: () => props.openChat(row.id),
-                  style: { width: '100%', textAlign: 'left', padding: '8px 12px', border: 0, borderRadius: 8, background: 'transparent', color: C.text, cursor: 'pointer', font: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-                  onMouseEnter: (e) => (e.currentTarget.style.background = C.hover),
-                  onMouseLeave: (e) => (e.currentTarget.style.background = 'transparent'),
+                  style: { flex: 1, minWidth: 0, textAlign: 'left', padding: '8px 12px', border: 0, background: 'transparent', color: C.text, cursor: 'pointer', font: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
                 },
                 row.title || t('untitled'),
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  title: t('archive'),
+                  'aria-label': `${t('archive')}: ${row.title || t('untitled')}`,
+                  onClick: () => archiveChat(row.id),
+                  style: { flex: 'none', padding: '6px 10px', border: 0, background: 'transparent', color: C.sub, cursor: 'pointer', font: 'inherit', fontSize: 12 },
+                },
+                t('archive'),
               ),
             ),
           ),
@@ -322,6 +359,9 @@ window.__ModuleLoader__.load({
               hooks: { sessions: ctx.sessions.list, workspaces: ctx.workspaces.list },
               startChat: (workspaceId) => ctx.uiWorkspace.startSession(workspaceId, { agentPreset: CHAT_PRESET }),
               openChat: (sessionId) => ctx.uiWorkspace.openSession(sessionId),
+              // DSH has no session delete; archiving hides the chat and is reversible
+              // from the sidebar's archived-sessions filter.
+              archiveChat: (sessionId) => ctx.uiWorkspace.archiveSession(sessionId),
             }),
           },
           ChatPanelBoundary,
