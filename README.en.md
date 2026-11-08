@@ -6,7 +6,7 @@ Adds a **Chat mode** to the [DeepSeek Harness (DSH)](https://www.deepseek.com/en
 
 > Unofficial third-party plugin, not affiliated with DeepSeek.
 
-![Why a sidebar panel instead of a top-left toggle](assets/why-panel.png)
+![The Chat panel: new chat, search and recent chats](assets/screenshot-panel.png)
 
 ## What it does
 
@@ -25,7 +25,13 @@ Adds a **Chat mode** to the [DeepSeek Harness (DSH)](https://www.deepseek.com/en
   - The model replies in the language you write in.
 - **Work mode is unchanged.** DSH's own UI and behavior are not touched.
 
+**New chat** opens DSH's native composer in the `Chat` mode, filed under the Chat workspace:
+
+![A new chat uses the Chat mode and sits in the Chat workspace](assets/screenshot-chat.png)
+
 ## Why a sidebar panel, not a top-left toggle
+
+![Why a sidebar panel instead of a top-left toggle](assets/why-panel.png)
 
 The most Claude-like design would put a "Chat | Work" toggle in the top-left corner of the window and lay a full chat screen over DSH. An earlier plugin did exactly that. It ran into the problems below:
 
